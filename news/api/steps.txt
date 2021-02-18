@@ -1,0 +1,16 @@
+The steps taken to create the api
+
+Step 1: After creating the api directory you want to create your serializer.py 
+
+Step 2: Import all the libraries and then create your funtion called ArticleSerializer of 
+        your model becasue this app is based on news and the models we working with is 
+        articles
+
+Step 3: Now to view your api you want to create the file views.py
+        and inside it import your libraries and create article_list_create_api_view() function
+
+Step 4: You want to create urls.py file and pass your article_list_create_api_view as the view
+        this will let you get your api and see the serialized data or parsed data
+
+Step 5: in your main app which is newsapi include your path url in urls.py 
+        ---> path('api/', include("news.api.urls"))
