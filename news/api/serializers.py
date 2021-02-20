@@ -1,34 +1,105 @@
+from datetime import datetime
+from django.utils.timesince import timesince
 from rest_framework import serializers
-from news.models import Article
+from news.models import Article, Journalist
 
-class ArticleSerializer(serializers.Serializer):
+# ------------------------------------------------------------------------------------------------------
+# THE BEST AND EFFICENT WAY TO CREATE SERIALIZER 
+# ------------------------------------------------------------------------------------------------------
+class ArticleSerializer(serializers.ModelSerializer):
     
-    # this id field should be a read only field
-    id = serializers.IntegerField(read_only=True)
-    author = serializers.CharField()
-    title = serializers.CharField()
-    description = serializers.CharField()
-    body = serializers.CharField()
-    location = serializers.CharField()
-    publication_date = serializers.DateField()
-    active = serializers.BooleanField()
-    created_at = serializers.DateTimeField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
+    time_since_publication = serializers.SerializerMethodField()
+    # author = JournalistSerializer()
+    # author = serializers.StringRelatedField()
     
-    def create(self, validated_data):
-        print(validated_data) # debuggin purposes and will print at the terminal
-        return Article.objects.create(**validated_data)
+    # this meta helps save all the lines below for the fields
+    class Meta:
+        model = Article
+        exclude = ("id",)
+        # fields = "__all__"
+        
+    # Self explanatory lol
+    def get_time_since_publication(self, object):
+        publication_date = object.publication_date
+        now = datetime.now()
+        time_delta = timesince(publication_date, now)
+        return time_delta
+
+    def validate(self, data):
+        """ 
+            Check that description and title are different
+        """
+        if data['title'] == data['description']:
+            raise serializers.ValidationError('Title and descrption must be different')
+        return data
+    
+    def validate_title(self, value):
+        """
+            Check that title is at least 60 chars long
+        """    
+        if len(value) < 30:
+            raise serializers.ValidationError('The Title has to be at least 30 chars long')
+        return value
+
+class JournalistSerializer(serializers.ModelSerializer):
+    
+    articles = serializers.HyperlinkedRelatedField(many=True, 
+                                                   read_only=True, 
+                                                   view_name="article-detail")
+    # articles = ArticleSerializer(many=True, read_only=True)
+    class Meta:
+        model = Journalist
+        fields = "__all__"
+        
+    def validate(self, data):
+        pass
+
+
+# ------------------------------------------------------------------------------------------------------
+#  All this code is so ambigious wow
+# ------------------------------------------------------------------------------------------------------
+# class ArticleSerializer(serializers.Serializer):
+    
+#     # this id field should be a read only field
+#     id = serializers.IntegerField(read_only=True)
+#     author = serializers.CharField()
+#     title = serializers.CharField()
+#     description = serializers.CharField()
+#     body = serializers.CharField()
+#     location = serializers.CharField()
+#     publication_date = serializers.DateField()
+#     active = serializers.BooleanField()
+#     created_at = serializers.DateTimeField(read_only=True)
+#     updated_at = serializers.DateTimeField(read_only=True)
+    
+#     def create(self, validated_data):
+#         print(validated_data) # debuggin purposes and will print at the terminal
+#         return Article.objects.create(**validated_data)
      
-    def update(self, instance, validated_data): 
-        instance.author = validated_data.get("author", instance.author)
-        instance.title = validated_data.get("title", instance.title)
-        instance.description = validated_data.get("description", instance.description)
-        instance.body = validated_data.get("body", instance.body)
-        instance.location = validated_data.get("location", instance.location)
-        instance.publication_date = validated_data.get("publication_date", instance.publication_date)
-        instance.active = validated_data.get("active", instance.active)
-        return instance
+#     def update(self, instance, validated_data): 
+#         instance.author = validated_data.get("author", instance.author)
+#         instance.title = validated_data.get("title", instance.title)
+#         instance.description = validated_data.get("description", instance.description)
+#         instance.body = validated_data.get("body", instance.body)
+#         instance.location = validated_data.get("location", instance.location)
+#         instance.publication_date = validated_data.get("publication_date", instance.publication_date)
+#         instance.active = validated_data.get("active", instance.active)
+#         return instance
     
+#     def validate(self, data):
+#         """  
+#             check that description and title are different
+#         """    
+#         if data['title'] == data['description']:
+#             print("---------------------------_> Error")
+#             raise serializers.ValidationError("Title and description must be different")
+#         print("------> Sucess")
+#         return data
+    
+    
+
+
+
 # Serializing process
 
 # Code: from news.models import Article

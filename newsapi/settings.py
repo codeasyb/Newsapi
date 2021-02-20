@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os, binascii
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+bin = binascii.hexlify(os.urandom(20)).decode()
+MY_DRF_AUTH_TOKEN = bin
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'newsapi.apiauth.APIRequestAuthentication'
+   ]
+}
+
 
 # Application definition
 
@@ -40,7 +51,16 @@ INSTALLED_APPS = [
     
     'news',
     'rest_framework',
+    
+    # for comments purpose, we deal with this later
+    # https://www.django-rest-framework.org/api-guide/authentication/#custom-authentication
+    # https://django-comments-xtd.readthedocs.io/en/latest/webapi.html
+    # 'django_comments',
+    # 'django_comments_xtd',
+    # 'django.contrib.sites', # this gave me 
 ]
+
+# SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
